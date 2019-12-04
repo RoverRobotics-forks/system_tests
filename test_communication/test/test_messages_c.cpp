@@ -75,6 +75,8 @@ make_scope_exit(Callable callable)
 
 #endif  // SCOPE_EXIT_HPP_
 
+#define EXPECT_ROSIDLC_STREQ(a, b) \
+  EXPECT_EQ(std::string(a.data, a.size + 1), std::string(b.data, b.size + 1))
 
 #ifdef RMW_IMPLEMENTATION
 # define CLASSNAME_(NAME, SUFFIX) NAME ## __ ## SUFFIX
@@ -546,8 +548,8 @@ void verify_message(test_msgs__msg__Strings & message, size_t msg_num)
 {
   test_msgs__msg__Strings expected_msg;
   get_message(&expected_msg, msg_num);
-  EXPECT_EQ(0, strcmp(expected_msg.string_value.data, message.string_value.data));
-  EXPECT_EQ(0, strcmp(expected_msg.bounded_string_value.data, message.bounded_string_value.data));
+  EXPECT_ROSIDLC_STREQ(expected_msg.string_value, message.string_value);
+  EXPECT_ROSIDLC_STREQ(expected_msg.bounded_string_value, message.bounded_string_value);
 
   auto msg_exit = make_scope_exit(
     [&expected_msg]() {
@@ -731,8 +733,7 @@ void verify_message(test_msgs__msg__Arrays & message, size_t msg_num)
     EXPECT_EQ(expected_msg.uint32_values[i], message.uint32_values[i]);
     EXPECT_EQ(expected_msg.int64_values[i], message.int64_values[i]);
     EXPECT_EQ(expected_msg.uint64_values[i], message.uint64_values[i]);
-    EXPECT_EQ(0, strcmp(expected_msg.string_values[i].data,
-      message.string_values[i].data));
+    EXPECT_ROSIDLC_STREQ(expected_msg.string_values[i], message.string_values[i]);
   }
 
   auto msg_exit = make_scope_exit(
@@ -987,8 +988,7 @@ void verify_message(test_msgs__msg__UnboundedSequences & message, size_t msg_num
       message.uint64_values.data[i]);
   }
   for (size_t i = 0; i < expected_msg.string_values.size; ++i) {
-    EXPECT_EQ(0, strcmp(message.string_values.data[i].data,
-      expected_msg.string_values.data[i].data));
+    EXPECT_ROSIDLC_STREQ(message.string_values.data[i], expected_msg.string_values.data[i]);
   }
 
   auto msg_exit = make_scope_exit(
@@ -1110,8 +1110,6 @@ void get_message(test_msgs__msg__BoundedSequences * msg, size_t msg_num)
     } \
   } while (0)
 
-#define EXPECT_ROSIDLC_STREQ(a, b) \
-  EXPECT_EQ(std::string(a.data, a.size), std::string(b.data, b.size))
 
 DEFINE_FINI_MESSAGE(test_msgs__msg__BoundedSequences)
 template<>
